@@ -1,0 +1,19 @@
+<Project>
+  <Import Project="../Directory.Build.props" />
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <Authors>Corporação Aspleo</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Description>Dispatcher CQRS em processo com handlers tipados e resolução no escopo atual.</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/ASPLEO/cqrs</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/ASPLEO/cqrs</PackageProjectUrl>
+    <PackageTags>cqrs;dispatcher</PackageTags>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+    <None Include="../../LICENSE" Pack="true" PackagePath="/" />
+  </ItemGroup>
+</Project>

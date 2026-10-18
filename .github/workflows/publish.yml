@@ -1,0 +1,49 @@
+name: Publish GitHub Packages
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+  packages: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Validate release metadata and tag
+        id: release
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          [xml]$props = Get-Content Directory.Build.props -Raw
+          [xml]$metadata = Get-Content src/Directory.Build.props -Raw
+          $version = $props.Project.PropertyGroup.Version
+          if ($env:RELEASE_TAG -cne "v$version") { throw 'Tag deve corresponder à versão em Directory.Build.props.' }
+          if ([string]::IsNullOrWhiteSpace($metadata.Project.PropertyGroup.Authors) -or $metadata.Project.PropertyGroup.Authors -eq 'PENDENTE') { throw 'Preencha Authors com a autoria confirmada antes de publicar.' }
+          if (!$metadata.Project.PropertyGroup.PackageLicenseExpression -and !$metadata.Project.PropertyGroup.PackageLicenseFile) { throw 'Defina a licença confirmada antes de publicar.' }
+          "version=$version" >> $env:GITHUB_OUTPUT
+      - run: dotnet restore Aspleo.Cqrs.slnx
+      - run: dotnet build Aspleo.Cqrs.slnx -c Release --no-restore
+      - run: dotnet test Aspleo.Cqrs.slnx -c Release --no-build
+      - name: Validate packages and local consumer
+        shell: pwsh
+        run: ./scripts/Verify-Packages.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: packages
+          path: artifacts/packages/**/*.nupkg
+      - name: Publish both packages
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_OWNER: ${{ github.repository_owner }}
+          PACKAGE_VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          foreach ($id in @('Aspleo.Cqrs.Abstractions', 'Aspleo.Cqrs.DependencyInjection')) {
+            dotnet nuget push "artifacts/packages/$env:PACKAGE_VERSION/$id.$env:PACKAGE_VERSION.nupkg" --source "https://nuget.pkg.github.com/$env:GH_OWNER/index.json" --api-key $env:GH_TOKEN --skip-duplicate
+            if ($LASTEXITCODE) { throw "Falha na publicação de $id" }
+          }

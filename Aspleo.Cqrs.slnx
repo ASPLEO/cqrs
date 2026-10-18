@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Aspleo.Cqrs.Abstractions/Aspleo.Cqrs.Abstractions.csproj" />
+    <Project Path="src/Aspleo.Cqrs.DependencyInjection/Aspleo.Cqrs.DependencyInjection.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Aspleo.Cqrs.Tests/Aspleo.Cqrs.Tests.csproj" />
+  </Folder>
+</Solution>
